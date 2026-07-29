@@ -3,10 +3,10 @@ import json
 import os
 import time
 import datetime
-import common # 修改了引入路径，适配放在根目录的 common.py
+import common
 import requests
 import math
-import subprocess # 引入 subprocess 调用外部脚本
+import subprocess
 
 db_dir = common.getDbDir()
 task_file_path = common.getTaskFilePath()
@@ -125,9 +125,8 @@ def saveTaskToFile(task:Dict):
     with open(task_file_path, "w", encoding="utf8") as f:
         json.dump(task, f, indent=4)
 
-# ==================== 核心修改区 ====================
+# ==================== 翻译调用逻辑 ====================
 def transcribe_audio(audio_path:str)->str:
-    """改为调用外部 infer.py 并读取生成的字幕内容，不再使用 WhisperModel"""
     INFER_SCRIPT_PATH = os.environ.get("INFER_SCRIPT_PATH", "/content/Faster-Whisper-TransWithAI-ChickenRice/infer.py")
     INFER_PROJECT_DIR = os.path.dirname(INFER_SCRIPT_PATH)
     PYTHON_EXECUTABLE = os.environ.get("PYTHON_EXECUTABLE", "python")
@@ -158,14 +157,14 @@ def transcribe_audio(audio_path:str)->str:
         print(f"[Error] infer.py 执行失败，错误信息: {e.stderr}")
         raise e
 
-    # 推理完成后，读取生成的 .lrc 文件，转成字符串传给服务端
+    # 读取生成的字幕文件内容
     base_name = os.path.splitext(audio_path)[0]
     lrc_path = f"{base_name}.lrc"
 
     if os.path.exists(lrc_path):
         with open(lrc_path, 'r', encoding='utf-8') as f:
             lrc_content = f.read()
-        # 清理生成的字母文件，保持目录干净
+        # 清理本地的临时字幕文件
         os.remove(lrc_path)
         return lrc_content
     else:
@@ -276,7 +275,7 @@ def main():
             sleepAndWait(worker_idle_seconds, "翻译队列为空")
         elif not success:
             sleepAndWait(worker_idle_seconds, f"发生错误(${task})")
-        else: # success
+        else:
             print("")
             print("task.id = ", task['id'], "task.secret = ", task['secret'])
             processTask(task)
