@@ -145,16 +145,16 @@ def transcribe_audio(audio_path:str)->str:
 
     print(f"[Exec] 执行翻译命令: {' '.join(cmd)}")
     try:
+        # 【核心修改】：去掉了 capture_output=True 和 text=True
+        # 这样 infer.py 的实时进度条和所有 print 日志都会直接显示在 Colab 屏幕上
         subprocess.run(
             cmd,
-            capture_output=True,
-            text=True,
             check=True,
             cwd=INFER_PROJECT_DIR
         )
         print("[Exec] 翻译命令执行成功")
     except subprocess.CalledProcessError as e:
-        print(f"[Error] infer.py 执行失败，错误信息: {e.stderr}")
+        print(f"[Error] infer.py 执行失败，退出码: {e.returncode}")
         raise e
 
     # 读取生成的字幕文件内容
@@ -169,6 +169,7 @@ def transcribe_audio(audio_path:str)->str:
         return lrc_content
     else:
         raise Exception(f"未找到生成的LRC文件: {lrc_path}")
+
 
 def checkTaskIsOwnByMe(task:Dict)->bool:
     try:
