@@ -76,4 +76,3 @@ def getTaskFilePath()->str:
     if db_dir == "":
         db_dir = getDbDir()
     return os.path.join(db_dir, "task.json")
-    
