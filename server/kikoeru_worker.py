@@ -139,7 +139,7 @@ def transcribe_audio(audio_path:str)->str:
         '--device=cuda',
         '--task=translate',
         '--enable_batching',
-        '--max_batch_size', '16',
+        '--max_batch_size', '8',
         audio_path
     ]
 
