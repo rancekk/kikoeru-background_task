@@ -1,0 +1,35 @@
+{
+    // DLsite 音声专用：保留上下文连贯 + 多重门限强力防幻觉
+    "task": "translate",
+    "language": "ja",
+
+    // 解码质量
+    "beam_size": 5,
+    "best_of": 5,
+    "patience": 1.0,
+    "temperature": [0.0, 0.2, 0.4],
+
+    // 【保持上下文连贯】：保证人名、角色称呼与前后剧情自然衔接
+    "condition_on_previous_text": true,
+
+    // 【核心防幻觉 1】：无声/水声/拟音静音门限（检测到非人声拟音概率高于 0.6 时自动输出空白）
+    "no_speech_threshold": 0.60,
+
+    // 【核心防幻觉 2】：平均对数概率置信度过滤（低于 -1.0 的低置信度硬猜内容自动丢弃）
+    "log_prob_threshold": -1.0,
+
+    // 【核心防幻觉 3】：文本压缩比熔断（高于 2.4 的鬼畜重复内容自动拦截）
+    "compression_ratio_threshold": 2.4,
+
+    // 重复词适度惩罚
+    "repetition_penalty": 1.1,
+
+    // 标配 VAD 门限（确保掏耳/水声拟音在进入大模型前被有效切除）
+    "vad_filter": true,
+    "vad_parameters": {
+        "threshold": 0.50,
+        "min_speech_duration_ms": 300,
+        "min_silence_duration_ms": 100,
+        "speech_pad_ms": 200
+    }
+}

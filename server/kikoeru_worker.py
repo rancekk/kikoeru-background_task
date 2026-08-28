@@ -20,6 +20,9 @@ kikoeru_user = common.getKikoeruUser()
 kikoeru_password = common.getKikoeruPassword()
 is_need_auth = False
 
+# DLsite 音声专用生成配置文件路径
+GEN_CONFIG_PATH = os.path.join(PROJECT_ROOT, "generation_config.json5")
+
 session = requests.session()
 
 def setupSession(sess: requests.Session, token: str):
@@ -190,7 +193,7 @@ def transcribe_audio(audio_path: str) -> str:
     INFER_PROJECT_DIR = os.path.dirname(INFER_SCRIPT_PATH)
     PYTHON_EXECUTABLE = os.environ.get("PYTHON_EXECUTABLE", "python")
 
-    # 使用项目原生参数调用
+    # 使用项目参数与防幻觉配置调用
     cmd = [
         PYTHON_EXECUTABLE,
         INFER_SCRIPT_PATH,
@@ -200,6 +203,7 @@ def transcribe_audio(audio_path: str) -> str:
         '--task=translate',
         '--enable_batching',
         '--batch_size', '8',
+        '--generation_config', GEN_CONFIG_PATH,
         audio_path
     ]
 
@@ -216,6 +220,7 @@ def transcribe_audio(audio_path: str) -> str:
             '--sub_formats=lrc',
             '--device=cuda',
             '--task=translate',
+            '--generation_config', GEN_CONFIG_PATH,
             audio_path
         ]
         try:
