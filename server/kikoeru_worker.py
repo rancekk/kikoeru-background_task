@@ -193,30 +193,16 @@ def transcribe_audio(audio_path: str) -> str:
     INFER_PROJECT_DIR = os.path.dirname(INFER_SCRIPT_PATH)
     PYTHON_EXECUTABLE = os.environ.get("PYTHON_EXECUTABLE", "python")
 
-    # 构建针对 DLsite 音声全面优化的参数
-    base_args = [
+    cmd = [
+        PYTHON_EXECUTABLE,
+        INFER_SCRIPT_PATH,
         '--audio_suffixes=mp3,wav,flac,m4a,aac,ogg,wma,mp4,mkv,avi,mov,webm,flv,wmv,opus',
         '--sub_formats=lrc',
         '--device=cuda',
         '--task=translate',
-        '--smart_split_with_vad',
-        '--target_chunk_duration_s', '30.0',
-        '--merge_segments',
-        '--merge_max_gap_ms', '1500',
-        '--merge_max_duration_ms', '12000',
-        '--vad_threshold', '0.40',
-        '--vad_min_speech_duration_ms', '250',
-        '--vad_speech_pad_ms', '250',
-    ]
-
-    # 如果存在定制的 generation_config.json5，则挂载注入
-    if os.path.exists(GEN_CONFIG_PATH):
-        base_args.extend(['--generation_config', GEN_CONFIG_PATH])
-
-    # 默认尝试批处理加速推理
-    cmd = [PYTHON_EXECUTABLE, INFER_SCRIPT_PATH] + base_args + [
         '--enable_batching',
         '--max_batch_size', '8',
+        '--generation_config', GEN_CONFIG_PATH,
         audio_path
     ]
 
@@ -226,7 +212,16 @@ def transcribe_audio(audio_path: str) -> str:
         print("[Exec] 翻译命令执行成功")
     except subprocess.CalledProcessError as e:
         print(f"[Warning] batch 推理失败 (code: {e.returncode})，尝试降级单批次模式重试...")
-        fallback_cmd = [PYTHON_EXECUTABLE, INFER_SCRIPT_PATH] + base_args + [audio_path]
+        fallback_cmd = [
+            PYTHON_EXECUTABLE,
+            INFER_SCRIPT_PATH,
+            '--audio_suffixes=mp3,wav,flac,m4a,aac,ogg,wma,mp4,mkv,avi,mov,webm,flv,wmv,opus',
+            '--sub_formats=lrc',
+            '--device=cuda',
+            '--task=translate',
+            '--generation_config', GEN_CONFIG_PATH,
+            audio_path
+        ]
         try:
             subprocess.run(fallback_cmd, check=True, cwd=INFER_PROJECT_DIR)
             print("[Exec] 降级单批次翻译执行成功")
