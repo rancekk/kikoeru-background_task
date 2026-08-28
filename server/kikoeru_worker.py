@@ -20,9 +20,6 @@ kikoeru_user = common.getKikoeruUser()
 kikoeru_password = common.getKikoeruPassword()
 is_need_auth = False
 
-# DLsite 音声专用生成配置文件路径
-GEN_CONFIG_PATH = os.path.join(PROJECT_ROOT, "generation_config.json5")
-
 session = requests.session()
 
 def setupSession(sess: requests.Session, token: str):
@@ -193,6 +190,7 @@ def transcribe_audio(audio_path: str) -> str:
     INFER_PROJECT_DIR = os.path.dirname(INFER_SCRIPT_PATH)
     PYTHON_EXECUTABLE = os.environ.get("PYTHON_EXECUTABLE", "python")
 
+    # 使用项目原生参数调用
     cmd = [
         PYTHON_EXECUTABLE,
         INFER_SCRIPT_PATH,
@@ -202,14 +200,10 @@ def transcribe_audio(audio_path: str) -> str:
         '--task=translate',
         '--enable_batching',
         '--max_batch_size', '8',
-        '--merge_segments',
-        '--merge_max_gap_ms', '1500',
-        '--merge_max_duration_ms', '12000',
-        '--generation_config', GEN_CONFIG_PATH,
         audio_path
     ]
 
-    print(f"[Exec] 执行 DLsite 优化翻译: {' '.join(cmd)}")
+    print(f"[Exec] 执行翻译命令: {' '.join(cmd)}")
     try:
         subprocess.run(cmd, check=True, cwd=INFER_PROJECT_DIR)
         print("[Exec] 翻译命令执行成功")
@@ -222,10 +216,6 @@ def transcribe_audio(audio_path: str) -> str:
             '--sub_formats=lrc',
             '--device=cuda',
             '--task=translate',
-            '--merge_segments',
-            '--merge_max_gap_ms', '1500',
-            '--merge_max_duration_ms', '12000',
-            '--generation_config', GEN_CONFIG_PATH,
             audio_path
         ]
         try:
@@ -347,7 +337,7 @@ def clearOldTaskAtStartup():
 
 def main():
     print("=" * 60)
-    print("Kikoeru Background Translate Worker 启动 (DLsite 音声优化版)")
+    print("Kikoeru Background Translate Worker 启动")
     print("kikoeru_url      =", kikoeru_url)
     print("kikoeru_user     =", kikoeru_user)
     print("worker_name      =", worker_name)
