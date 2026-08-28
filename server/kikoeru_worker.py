@@ -202,6 +202,9 @@ def transcribe_audio(audio_path: str) -> str:
         '--task=translate',
         '--enable_batching',
         '--max_batch_size', '8',
+        '--merge_segments',
+        '--merge_max_gap_ms', '1500',
+        '--merge_max_duration_ms', '12000',
         '--generation_config', GEN_CONFIG_PATH,
         audio_path
     ]
@@ -219,6 +222,9 @@ def transcribe_audio(audio_path: str) -> str:
             '--sub_formats=lrc',
             '--device=cuda',
             '--task=translate',
+            '--merge_segments',
+            '--merge_max_gap_ms', '1500',
+            '--merge_max_duration_ms', '12000',
             '--generation_config', GEN_CONFIG_PATH,
             audio_path
         ]
